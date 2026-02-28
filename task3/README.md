@@ -14,3 +14,52 @@ The risk manager has collected data on the loan borrowers. The data is in tabula
 
 - You should produce a function that can take in the properties of a loan and output the expected loss.
 - You can explore any technique ranging from a simple regression or a decision tree to something more advanced. You can also use multiple methods and provide a comparative analysis.
+
+---
+
+## Findings
+
+### Dataset
+- 10,000 borrower records with 6 features and a binary `default` label
+- Class distribution: ~82% non-default, ~18% default (moderate imbalance)
+- No missing values or duplicate records
+
+### EDA
+- **Strongest predictors of default:**
+  - `credit_lines_outstanding` (correlation: +0.86) — most dominant feature
+  - `total_debt_outstanding` (correlation: +0.76)
+  - `fico_score` (correlation: -0.32) — higher score reduces default risk
+  - `years_employed` (correlation: -0.28) — more stability reduces risk
+- **Multicollinearity noted:**
+  - `credit_lines_outstanding` ↔ `total_debt_outstanding`: 0.85
+  - `loan_amt_outstanding` ↔ `income`: 0.84
+- Outliers present in `loan_amt_outstanding`, `total_debt_outstanding`, and `income` — consistent with a synthetic dataset
+
+### Model — Logistic Regression
+- Stratified 60/20/20 train/val/test split to preserve class balance
+- `class_weight='balanced'` used to handle the 82/18 imbalance
+- Features scaled with `StandardScaler` prior to fitting
+
+**Results:**
+
+| Split | ROC-AUC | Accuracy |
+|-------|---------|----------|
+| Val   | 1.000   | 99%      |
+| Test  | 1.000   | 100%     |
+
+- Perfect separation achieved — consistent with the synthetic nature of the dataset
+- No hyperparameter tuning required given perfect AUC
+
+### Expected Loss Function
+- Implemented in `task3.py` as `expected_loss(...)`
+- Formula: `EL = PD × loan_amt_outstanding × (1 - recovery_rate)`
+- Recovery rate assumed at **10%**
+- Uses raw `predict_proba` output (no threshold applied) for continuous EL estimation
+
+**Sample outputs:**
+
+| Borrower Profile | PD | Expected Loss |
+|------------------|----|--------------|
+| Low risk (0 credit lines, FICO 750, income $90k) | 0.00% | $0.00 |
+| Medium risk (2 credit lines, FICO 600, income $55k) | 0.21% | $9.58 |
+| High risk (4 credit lines, FICO 500, income $30k) | 100.00% | $7,200.00 |
