@@ -21,7 +21,7 @@ from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 warnings.filterwarnings("ignore")
 
-DATA_PATH = Path(__file__).parent / "Nat_Gas.csv"
+DATA_PATH = Path(__file__).parent.parent / "data" / "Nat_Gas.csv"
 
 # Best model parameters from experiments
 SARIMA_ORDER          = (1, 1, 1)
